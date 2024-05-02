@@ -1,0 +1,1609 @@
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00002 ;
+                      00003 ;       Project:                Interfacing PICs 
+                      00004 ;       Source File Name:       VINTEST.ASM             
+                      00005 ;       Status:                 Final version
+                      00006 ; zainab shaabneh 1182820
+                      00007 ; baraa hammad 1191495
+                      00008 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00009 ;
+                      00010 ;       Demonstrates simple analogue input
+                      00011 ;       using an external reference voltage of 2.56V
+                      00012 ;       The 8-bit result is converted to BCD for display
+                      00013 ;       as a voltage using the standard LCD routines.
+                      00014 ;       
+                      00015 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00016 
+                      00017         PROCESSOR 16F877A
+                      00018 ;       Clock = XT 4MHz, standard fuse settings
+2007   3731           00019         __CONFIG 0x3731
+                      00020 
+                      00021 ;       LABEL EQUATES   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00022 
+                      00023         #INCLUDE "P16F877A.INC"         ; standard labels 
+                      00001         LIST
+                      00002 ; P16F877A.INC  Standard Header File, Version 1.00    Microchip Technology, Inc.
+                      00398         LIST
+                      00024 ;==================================================
+                      00025 
+                      00026 
+Warning[205]: Found directive in column 1. (cblock)
+                      00027 cblock 0x25
+  00000025            00028 RESULT_PART2
+  00000026            00029 RESULT_PART1
+  00000027            00030 RESULT_1
+  00000028            00031 RESULT_2
+  00000029            00032 value_recivemost
+  0000002A            00033 value_recivelest
+  0000002B            00034 multiplier 
+  0000002C            00035 COUNT
+  0000002D            00036 d1
+  0000002E            00037 temp_result
+  0000002F            00038 d2
+  00000030            00039 d3
+  00000031            00040 d11     ;tens of first num
+  00000032            00041 d12     ;ones of first num
+  00000033            00042 d21  ;tens of second num
+  00000034            00043 d22 ; ones of second num
+  00000035            00044 counter
+  00000036            00045 num1
+  00000037            00046 num2
+  00000038            00047 num 
+  00000039            00048 temp_high   
+  0000003A            00049 temp_low     
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  0000003B            00050 x
+  0000003C            00051 dgt
+  0000003D            00052 x2
+  0000003E            00053 digit_pos
+  0000003F            00054 op_num
+  00000040            00055 RB0_count
+  00000041            00056 value_one
+  00000042            00057 thous
+  00000043            00058 huns
+  00000044            00059 tens
+  00000045            00060 ones
+  00000046            00061  numresult
+  00000047            00062  clkNum
+Warning[205]: Found directive in column 1. (ENDC)
+                      00063 endc
+                      00064  
+                      00065 ;============================================= PROGRAM BEGINS ==========================================
+                            ==
+                      00066 
+0000                  00067         ORG     0               ; Default start address 
+0000   28DE           00068         GOTO start 
+                      00069  
+                      00070 ;==========================================Inerupt service routine======================================
+                            ==
+0001                  00071 ISR
+0004                  00072         ORG 004
+0004   138B           00073         BCF INTCON,7 ;clear GIE to deny other interupt
+0005   10F4           00074         BCF     Select,RS       ; set display command mode
+                      00075     
+                      00076    
+                      00077  ;=================================== first number tenth part ===========================
+0006   2249           00078         CALL    inid            ; Initialise the display
+                      00079 
+0007   3080           00080         MOVLW   080     ; code to home cursor
+0008   2239           00081         CALL    send            ; output it to display
+0009   14F4           00082         BSF     Select,RS       ; and restore data mode
+000A   2176           00083     call printNum1
+                      00084   
+000B   14F4           00085         BSF     Select,RS       ; and restore data mode
+000C   30C0           00086         MOVLW   0C0             ; code to home cursor at first position
+000D   2239           00087         CALL    send    ; output it to display
+                      00088  
+000E   3001           00089     MOVLW 1
+000F   023E           00090         SUBWF digit_pos,W
+0010   1903           00091         BTFSC STATUS,2 ; check if digit_pos is 2
+0011   2824           00092         GOTO  tens1
+                      00093   
+                      00094  
+                      00095 
+                      00096 ;=========================================first number ones part ==========================
+0012   3002           00097         MOVLW 2
+0013   023E           00098         SUBWF digit_pos,W
+0014   1903           00099         BTFSC STATUS,2 ; check if digit_pos is 1
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0015   2844           00100         GOTO  ones1
+                      00101 ;===========================================operation pos ===============================
+                      00102         ;check if we at operation pos   
+0016   3003           00103         MOVLW 3
+0017   023E           00104         SUBWF digit_pos,W
+0018   1903           00105         BTFSC STATUS,2 ; check if digit_pos is 3
+0019   30C2           00106         MOVLW   0C2             ; code to home cursor at first position
+001A   2239           00107         CALL    send    ; output it to display
+001B   14F4           00108         BSF     Select,RS       ; and restore data mode
+001C   2998           00109         GOTO  printX
+001D   0188           00110         CLRF    PORTD           ; Clear display outputs
+001E   3001           00111     MOVLW 1
+001F   00BE           00112         MOVWF digit_pos
+0020   3080           00113     MOVLW       080             ; code to home cursor
+0021   2239           00114         CALL    send            ; output it to display
+0022   14F4           00115         BSF     Select,RS       ; and restore data mode
+0023   2187           00116         call printNum2
+                      00117 
+                      00118 ;====================================tenth part of first number =======================================
+                      00119  
+                      00120 ;====================================tenth part of first number =======================================
+                      00121  
+Warning[207]: Found label after column 1. (tens1)
+0024                  00122         tens1
+0024   30C0           00123         MOVLW   0C0             ; code to home cursor at first position
+0025   2239           00124                 CALL    send    ; output it to display
+0026   14F4           00125                 BSF     Select,RS       ; and restore data mode
+0027   1C8B           00126                 BTFSS INTCON,1  ; check if interrupt is from RB0 or Timer0 
+0028   2831           00127                 GOTO TM0_INT    ; handle interrupt Timer 0
+                      00128         ; handle interrupt RB0
+Warning[207]: Found label after column 1. (RBO_INTR)
+0029                  00129         RBO_INTR
+Message[305]: Using default destination of 1 (file).
+0029   0AB1           00130                 INCF d11
+002A   3010           00131                 MOVLW 10
+002B   0231           00132                 SUBWF d11,W
+002C   1903           00133                 BTFSC STATUS,2 ;  
+002D   282F           00134                 GOTO zero_tenthous
+002E   2840           00135                 GOTO dis_RB0
+Warning[207]: Found label after column 1. (zero_tenthous)
+002F                  00136         zero_tenthous
+002F   01B1           00137                 CLRF d11
+0030   2840           00138                 GOTO dis_RB0
+Warning[207]: Found label after column 1. (TM0_INT)
+0031                  00139         TM0_INT
+Message[305]: Using default destination of 1 (file).
+0031   0AB5           00140                 INCF counter
+0032   3028           00141                 MOVLW d'40' 
+0033   0235           00142                 SUBWF counter,W
+0034   1903           00143                 BTFSC STATUS,2 ;check if counter value is 20
+0035   2837           00144                 GOTO dis_TM0
+0036   28D8           00145                 GOTO cont
+Warning[207]: Found label after column 1. (dis_TM0)
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0037                  00146         dis_TM0
+                      00147                 ;here timer is arrive 2 second
+0037   01B5           00148                 CLRF counter 
+Message[305]: Using default destination of 1 (file).
+0038   0ABE           00149                 INCF digit_pos
+0039   0831           00150                 MOVF d11,w
+003A   00BC           00151                 MOVWF dgt
+003B   21F5           00152                 call MUL_BY_10
+003C   083D           00153                 MOVF x2,w
+003D   07B6           00154                 ADDWF num1,f
+003E   01BD           00155                 CLRF x2
+003F   2840           00156                 GOTO dis_RB0
+Warning[207]: Found label after column 1. (dis_RB0)
+0040                  00157         dis_RB0
+0040   3030           00158                 MOVLW   030             ; load ASCII offset
+0041   0731           00159                 ADDWF   d11,W
+0042   2239           00160                 CALL    send
+0043   28D8           00161                 GOTO cont
+                      00162  
+                      00163 ;========================================ones part of first number =====================================
+                            =======
+                      00164  
+Warning[207]: Found label after column 1. (ones1)
+0044                  00165         ones1
+0044   30C1           00166         MOVLW   0C1             ; code to home cursor
+0045   2239           00167                 CALL    send            ; output it to display
+0046   14F4           00168                 BSF     Select,RS       ; and restore data mode
+0047   1C8B           00169                 BTFSS INTCON,1 ; check if interrupt is from RB0 or Timer0 
+0048   2859           00170                 GOTO TM0_INT1 
+Warning[207]: Found label after column 1. (RBO_INTR1)
+0049                  00171         RBO_INTR1
+Message[305]: Using default destination of 1 (file).
+0049   0AB2           00172                 INCF d12
+004A   3010           00173                 MOVLW 10
+004B   0231           00174                 SUBWF d11,W
+004C   1903           00175                 BTFSC STATUS,2
+004D   2853           00176                 GOTO rolling_9_0
+004E   300A           00177                 MOVLW d'10'             
+004F   0232           00178                 SUBWF d12,W
+0050   1903           00179                 BTFSC STATUS,2 
+0051   2857           00180                 GOTO zero
+0052   2867           00181                 GOTO dis_RB01
+Warning[207]: Found label after column 1. (rolling_9_0)
+0053                  00182         rolling_9_0
+0053   3010           00183                 MOVLW 10
+0054   0232           00184                 SUBWF d12,W             ; here means that ones is 10
+0055   2857           00185                 GOTO zero
+0056   2867           00186                 GOTO dis_RB01
+Warning[207]: Found label after column 1. (zero)
+0057                  00187         zero
+0057   01B2           00188                 CLRF d12
+0058   2867           00189                 GOTO dis_RB01
+Warning[207]: Found label after column 1. (TM0_INT1)
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0059                  00190         TM0_INT1
+Message[305]: Using default destination of 1 (file).
+0059   0AB5           00191                 INCF counter
+005A   3028           00192                 MOVLW d'40'
+005B   0235           00193                 SUBWF counter,W
+005C   1903           00194                 BTFSC STATUS,2 ;check if counter value is 20;;;;;;;;;;;;;;;;;;;;;;;
+005D   285F           00195                 GOTO dis_TM01
+005E   28D8           00196                 GOTO cont
+Warning[207]: Found label after column 1. (dis_TM01)
+005F                  00197         dis_TM01
+005F   01B5           00198                 CLRF counter
+Message[305]: Using default destination of 1 (file).
+0060   0ABE           00199                 INCF digit_pos
+0061   0832           00200                 MOVF d12,w
+0062   00BC           00201                 MOVWF dgt
+0063   083D           00202                 MOVF x2,w
+0064   07B6           00203                 ADDWF num1,f
+0065   01BD           00204                 CLRF x2
+0066   2867           00205                 GOTO dis_RB01
+Warning[207]: Found label after column 1. (dis_RB01)
+0067                  00206         dis_RB01
+0067   3030           00207                 MOVLW   030             ; load ASCII offset
+0068   0732           00208                 ADDWF   d12,W
+0069   2239           00209                 CALL    send
+006A   28D8           00210                 GOTO cont
+                      00211  
+                      00212  
+                      00213 
+                      00214  ;==================================== second number =======================================
+                      00215    
+006B   10F4           00216     BCF Select, RS    ; set display command mode
+006C   30C0           00217     MOVLW 0xC0        ; move the cursor to the second line (address 0xC0)
+006D   2239           00218     CALL send         ; output it to the display
+                      00219 ;==========================tenth part=======================================
+006E   3001           00220         MOVLW 1
+006F   023E           00221         SUBWF digit_pos,W
+0070   1903           00222         BTFSC STATUS,2 ; check if digit_pos is 1
+0071   2876           00223         GOTO  tens2
+                      00224  ;==========================ones part=======================================
+0072   3002           00225         MOVLW 2
+0073   023E           00226         SUBWF digit_pos,W
+0074   1903           00227         BTFSC STATUS,2 ; check if digit_pos is 1
+0075   2896           00228         GOTO  ones2
+                      00229    
+                      00230  
+                      00231 ;====================================tenth part of second number=======================================
+Warning[207]: Found label after column 1. (tens2)
+0076                  00232         tens2
+0076   30C0           00233         MOVLW   0C0     ; code to home cursor at first position
+0077   2239           00234                 CALL    send    ; output it to display
+0078   14F4           00235                 BSF     Select,RS       ; and restore data mode
+0079   1C8B           00236                 BTFSS INTCON,1  ; check if interrupt is from RB0 or Timer0 
+007A   2883           00237                 GOTO TM0_INT7   ; handle interrupt Timer 0
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00238         ; handle interrupt RB0
+Warning[207]: Found label after column 1. (RBO_INTR7)
+007B                  00239         RBO_INTR7
+Message[305]: Using default destination of 1 (file).
+007B   0AB3           00240                 INCF d21
+007C   3010           00241                 MOVLW 10
+007D   0233           00242                 SUBWF d21,W
+007E   1903           00243                 BTFSC STATUS,2 ; check if tens is more than 9
+007F   2881           00244                 GOTO zero2
+0080   2892           00245                 GOTO dis_RB07
+Warning[207]: Found label after column 1. (zero2)
+0081                  00246         zero2
+0081   01B3           00247                 CLRF d21
+0082   2892           00248                 GOTO dis_RB07
+Warning[207]: Found label after column 1. (TM0_INT7)
+0083                  00249         TM0_INT7
+Message[305]: Using default destination of 1 (file).
+0083   0AB5           00250                 INCF counter
+0084   3028           00251                 MOVLW d'40'  
+0085   0235           00252                 SUBWF counter,W
+0086   1903           00253                 BTFSC STATUS,2 ;check if counter value is 20
+0087   2889           00254                 GOTO dis_TM07
+0088   28D8           00255                 GOTO cont
+Warning[207]: Found label after column 1. (dis_TM07)
+0089                  00256         dis_TM07
+                      00257                 ;here timer is arrive 2 second
+0089   01B5           00258                 CLRF counter 
+Message[305]: Using default destination of 1 (file).
+008A   0ABE           00259                 INCF digit_pos
+008B   0833           00260                 MOVF d21,w
+008C   00BC           00261                 MOVWF dgt
+008D   21F5           00262                 call MUL_BY_10
+008E   083D           00263                 MOVF x2,w
+008F   07B7           00264                 ADDWF num2,f
+0090   01BD           00265                 CLRF x2
+0091   2892           00266                 GOTO dis_RB07
+Warning[207]: Found label after column 1. (dis_RB07)
+0092                  00267         dis_RB07
+0092   3030           00268                 MOVLW   030             ; load ASCII offset
+0093   0733           00269                 ADDWF   d21,W
+0094   2239           00270                 CALL    send
+0095   28D8           00271                 GOTO cont
+                      00272          
+                      00273 ;====================================ones part of second number=======================================
+                      00274  
+Warning[207]: Found label after column 1. (ones2)
+0096                  00275         ones2
+0096   30C1           00276         MOVLW   0C1     ; code to home cursor
+0097   2239           00277                 CALL    send            ; output it to display
+0098   14F4           00278                 BSF     Select,RS       ; and restore data mode
+0099   1C8B           00279                 BTFSS INTCON,1 ; check if interrupt is from RB0 or Timer0 
+009A   28AB           00280                 GOTO TM0_INT8 
+Warning[207]: Found label after column 1. (RBO_INTR8)
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+009B                  00281         RBO_INTR8
+Message[305]: Using default destination of 1 (file).
+009B   0AB4           00282                 INCF d22
+009C   3006           00283                 MOVLW 6
+009D   0233           00284                 SUBWF d21,W
+009E   1903           00285                 BTFSC STATUS,2
+009F   28A5           00286                 GOTO rolling1_9_0
+00A0   300A           00287                 MOVLW d'10'             
+00A1   0234           00288                 SUBWF d22,W
+00A2   1903           00289                 BTFSC STATUS,2 
+00A3   28A9           00290                 GOTO zero_2
+00A4   28B9           00291                 GOTO dis_RB08
+Warning[207]: Found label after column 1. (rolling1_9_0)
+00A5                  00292         rolling1_9_0
+00A5   3010           00293                 MOVLW 10
+00A6   0234           00294                 SUBWF d22,W             ; here means that tens is 10
+00A7   28A9           00295                 GOTO zero_2
+00A8   28B9           00296                 GOTO dis_RB08
+Warning[207]: Found label after column 1. (zero_2)
+00A9                  00297         zero_2
+00A9   01B4           00298                 CLRF d22
+00AA   28B9           00299                 GOTO dis_RB08
+Warning[207]: Found label after column 1. (TM0_INT8)
+00AB                  00300         TM0_INT8
+Message[305]: Using default destination of 1 (file).
+00AB   0AB5           00301                 INCF counter
+00AC   3028           00302                 MOVLW d'40'
+00AD   0235           00303                 SUBWF counter,W
+00AE   1903           00304                 BTFSC STATUS,2 ;check if counter value is 20
+00AF   28B1           00305                 GOTO dis_TM08
+00B0   28D8           00306                 GOTO cont
+Warning[207]: Found label after column 1. (dis_TM08)
+00B1                  00307         dis_TM08
+00B1   01B5           00308                 CLRF counter
+Message[305]: Using default destination of 1 (file).
+00B2   0ABE           00309                 INCF digit_pos
+00B3   0834           00310                 MOVF d22,w
+00B4   00BC           00311                 MOVWF dgt
+00B5   083D           00312                 MOVF x2,w
+00B6   07B7           00313                 ADDWF num2,f
+00B7   01BD           00314                 CLRF x2
+00B8   28B9           00315                 GOTO dis_RB08
+Warning[207]: Found label after column 1. (dis_RB08)
+00B9                  00316         dis_RB08
+00B9   3030           00317                 MOVLW   030             ; load ASCII offset
+00BA   0734           00318                 ADDWF   d22,W
+00BB   2239           00319                 CALL    send
+00BC   28D8           00320                 GOTO cont
+                      00321  
+00BD                  00322 here
+00BD   01B5           00323                 CLRF counter
+00BE   0AC7           00324                 INCF clkNum, 1
+00BF   3003           00325                 MOVLW 3
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00C0   0247           00326                 SUBWF clkNum,W
+00C1   1903           00327                 BTFSC STATUS,2  
+00C2   28C3           00328                 GOTO zero_clks
+00C3                  00329 zero_clks
+00C3   01C7           00330                 CLRF clkNum
+00C4   0008           00331                 return
+00C5                  00332 dis_TM0_k
+                      00333                 ;here timer is arrive 2 second
+00C5   01B5           00334                 CLRF counter
+00C6   3000           00335                 MOVLW 0
+00C7   0247           00336                 SUBWF clkNum,w
+00C8   1903           00337                 BTFSC STATUS, 2
+00C9   28CA           00338                 GOTO displayNums
+                      00339 ;====================================================================================================
+00CA                  00340 displayNums
+00CA   30C0           00341                 MOVLW 0C0
+00CB   2239           00342                 call send
+00CC   3030           00343                 MOVLW 030
+00CD   0731           00344                 addwf d11,w
+00CE   2239           00345                 call send
+00CF   3030           00346                 MOVLW 030
+00D0   0732           00347                 addwf d12,w
+00D1   2239           00348                 call send
+00D2   0733           00349         addwf d21,w
+00D3   2239           00350                 call send
+00D4   3030           00351                 MOVLW 030
+00D5   0734           00352                 addwf d22,w
+00D6   2239           00353                 call send
+                      00354 
+Warning[203]: Found opcode in column 1. (return)
+00D7   0008           00355 return 
+                      00356 ;=================================================cont================================================
+                      00357 
+                      00358 
+00D8                  00359 cont
+00D8   303D           00360         MOVLW d'61'
+00D9   0081           00361         MOVWF TMR0
+00DA   108B           00362         BCF INTCON,1
+00DB   110B           00363         BCF INTCON,2
+00DC   178B           00364         BSF INTCON,7
+Warning[203]: Found opcode in column 1. (RETFIE)
+00DD   0009           00365 RETFIE
+                      00366  
+                      00367  
+                      00368  
+                      00369 
+                      00370 ; MAIN LOOP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                      00371 
+00DE                  00372 start
+                      00373         ;initialize all digits to zero
+00DE   3000           00374         MOVLW 0
+00DF   00B1           00375         MOVWF d11
+00E0   00B2           00376         MOVWF d12
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00E1   00B3           00377         MOVWF d21
+00E2   00B4           00378         MOVWF d22
+00E3   00B5           00379         MOVWF counter
+00E4   01C7           00380     CLRF clkNum
+00E5   3001           00381         MOVLW 1
+00E6   00BE           00382         MOVWF digit_pos
+                      00383  
+                      00384         
+                      00385  
+                      00386         ;some config. for LCD that connected with portD
+Warning[207]: Found label after column 1. (DATA_OUT)
+  00000007            00387     DATA_OUT equ PORTC     ; PortC for data transfer
+Warning[207]: Found label after column 1. (DATA_IN)
+  00000007            00388     DATA_IN equ PORTC      ; PortC for data transfer
+00E7   1683 1303      00389         BANKSEL TRISD           ; Select bank 1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00E9   0188           00390         CLRF    TRISD           ; Display port is output 
+00EA   1283 1303      00391         BANKSEL PORTD           ; Select bank 0
+00EC   0188           00392         CLRF    PORTD           ; Clear display outputs
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00ED   1406           00393     BSF TRISB, 0                ; Make RB0 as an input for the push button
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00EE   1088           00394     BCF TRISD, 1                ; Make RC1 as an OUTPUT for the led
+00EF   1283 1303      00395     BANKSEL PORTB               ; Select bank 0
+00F1   0186           00396         CLRF    PORTB           ; Clear display outputs
+00F2   0188           00397     CLRF        PORTD           ; Clear display outputs
+00F3   2249           00398         CALL    inid            ; Initialise the display
+00F4   01BC           00399         CLRF    dgt
+00F5   01BD           00400         CLRF    x2
+00F6   01C4           00401         CLRF    tens
+00F7   01C5           00402         CLRF    ones
+00F8   01B8           00403         CLRF    num
+00F9   01B6           00404         CLRF    num1
+00FA   01B7           00405         CLRF    num2
+00FB   01C6           00406         CLRF    numresult
+                      00407     
+                      00408 ;===============blinking===============
+00FC   2133           00409     call BlinkLoop
+00FD   2133           00410     call BlinkLoop
+00FE   2133           00411     call BlinkLoop
+                      00412 
+                      00413 ;configuration for interupt on RB0 and TIMR0
+00FF   1683 1303      00414         banksel OPTION_REG
+0101   30C7           00415         MOVLW B'11000111'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0102   0081           00416         MOVWF OPTION_REG
+0103   1683 1303      00417         BANKSEL TRISB
+0105   30FF           00418         MOVLW H'FF'
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0106   0086           00419         MOVWF TRISB
+0107   1283 1303      00420         BANKSEL INTCON
+0109   178B           00421         BSF INTCON,7 ; Globak=l interrupt enable
+010A   160B           00422         BSF INTCON,4 ; RB0 interrupt enable
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+010B   108B           00423         BCF INTCON,1 ; RB0 interrrupt flag
+010C   168B           00424         BSF INTCON,5 ;TIMR0 interrupt enable
+010D   110B           00425         BCF INTCON,2 ;TIMR0 interrupt flag
+010E   303D           00426         MOVLW d'61'
+010F   0081           00427         MOVWF TMR0 ;TMR0 = 256 - (Fosc/4*F*PRE)-->Fosc=4MHZ, F = 1/(50ms),PRE = 256
+                      00428 ;=======================================================================================
+Warning[207]: Found label after column 1. (start2)
+0110                  00429     start2
+                      00430    
+0110   216C           00431     call send_first_number_to_co_processor
+0111   2171           00432     call send_unit_digit_of_second_number_to_co_processor
+0112   2151           00433     call MultiplicationOp
+0113   2163           00434     call receive_most_significant_digits_from_co_processor
+0114   2167           00435     call receive_least_significant_digit_from_co_processor
+0115   10F4           00436     BCF Select,RS       ; set display command mode
+0116   3080           00437         MOVLW   080             ; code to home cursor
+0117   2239           00438         CALL    send            ; output it to display
+0118   14F4           00439         BSF     Select,RS       ; and restore data mode
+                      00440    
+                      00441 
+                      00442    ; Add the least significant digits
+0119   0826           00443     movf RESULT_PART1, W
+011A   07AA           00444     addwf value_recivelest, F ;least significant digits final result  
+                      00445     ; Add the carry from the least significant digits
+011B   1C03           00446     btfss STATUS, C
+011C   291E           00447     goto skip_carry_addition
+011D   0AA9           00448     incf value_recivemost, F
+                      00449 
+011E                  00450 skip_carry_addition:
+                      00451     ; Add the most significant digits
+011E   0825           00452     movf RESULT_PART2, W
+011F   07A9           00453     addwf value_recivemost, F ;  most significant final result 
+0120   0008           00454     return
+                      00455 
+                      00456 
+                      00457 
+0121   10F4           00458     BCF  Select,RS      ; set display command mode
+0122   3080           00459         MOVLW   080             ; code to home cursor
+0123   2239           00460         CALL    send            ; output it to display
+0124   14F4           00461         BSF     Select,RS       ; and restore data mode
+0125   21D2           00462     call print_result
+                      00463 
+0126   10F4           00464     BCF Select, RS    ; set display command mode
+0127   30C0           00465     MOVLW 0xC0        ; move the cursor to the second line (address 0xC0)
+0128   2239           00466     CALL send         ; output it to the display
+0129   14F4           00467     BSF Select, RS    ; and restore data mode
+012A   21FC           00468     call  Combine   
+012B   2203           00469     call get_digits
+012C   2216           00470         call display
+012D   292E           00471         GOTO CheckPushButton
+                      00472 
+                      00473 
+                      00474 
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+012E                  00475 CheckPushButton:
+012E   1283 1303      00476     BANKSEL PORTB         ; Select the bank containing the PORTB register
+0130   1C86           00477     BTFSS PORTB, 1       ; Check if RB0 (where push button P is connected) is high (not pressed)
+0131   28DE           00478     goto start
+0132   292E           00479     goto CheckPushButton
+0133                  00480 BlinkLoop:
+0133   2249           00481         CALL    inid            ; Initialise the display
+0134   10F4           00482         BCF     Select,RS       ; set display command mode
+0135   3080           00483         MOVLW   080             ; code to home cursor
+0136   2239           00484         CALL    send            ; output it to display
+0137   14F4           00485         BSF     Select,RS       ; and restore data mode
+0138   21B8           00486         CALL    putLCD          ; display input
+                      00487 
+0139   10F4           00488     BCF Select, RS    ; set display command mode
+013A   30C0           00489     MOVLW 0xC0        ; move the cursor to the second line (address 0xC0)
+013B   2239           00490     CALL send         ; output it to the display
+013C   14F4           00491     BSF Select, RS    ; and restore data mode
+013D   219B           00492     CALL printlcd       ; display input on the second line
+                      00493     
+                      00494 ;   Delay for 1 second (adjust as needed)
+013E   3064           00495    MOVLW 0x64           ; Load W with delay value (100 in decimal)
+013F   2142           00496    CALL d_1sec           ; Call a delay subroutine
+0140   0188           00497    CLRF         PORTD           ; Clear display outputs
+                      00498     
+                      00499 
+0141   0008           00500    return 
+                      00501  
+                      00502  ;=====================================
+                      00503  
+                      00504 
+                      00505 ;===========================================  dealy 1 sec  ==================================
+                      00506 
+                      00507 
+                      00508 
+0142                  00509 d_1sec
+0142   3004           00510         movlw d'4'
+0143   00B0           00511         movwf d3
+Warning[207]: Found label after column 1. (loop3d)
+0144                  00512         loop3d
+0144   30C8           00513         movlw d'200'
+0145   00AF           00514         movwf d2
+Warning[207]: Found label after column 1. (loop2d)
+0146                  00515         loop2d
+0146   30FA           00516         movlw d'250'
+0147   00AD           00517         movwf d1
+Warning[207]: Found label after column 1. (loopd)
+0148                  00518         loopd
+0148   0000           00519         nop
+0149   0000           00520         nop
+014A   0BAD           00521         decfsz d1,f
+014B   2948           00522         goto loopd 
+014C   0BAF           00523         decfsz d2,f
+014D   2946           00524         goto loop2d
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+014E   0BB0           00525         decfsz d3,f
+014F   2944           00526         GOTO loop3d
+Warning[203]: Found opcode in column 1. (return)
+0150   0008           00527 return 
+                      00528 
+                      00529 ;===================Multiplication ===========================
+                      00530  
+                      00531 
+0151                  00532 MultiplicationOp
+0151   01A5           00533         CLRF    RESULT_PART2
+0152   01A6           00534         CLRF    RESULT_PART1
+0153   3008           00535         MOVLW   D'8'
+0154   00AC           00536         MOVWF   COUNT
+0155   0836           00537         MOVF    num1 , W
+0156   1003           00538         BCF             STATUS, C
+0157   2158           00539     call    MultiplicationOp_LOOP
+                      00540 
+0158                  00541 MultiplicationOp_LOOP
+0158   0CB4           00542         RRF             d22, F
+0159   1803           00543         BTFSC   STATUS, C
+015A   07A5           00544         ADDWF   RESULT_PART2, F
+015B   0CA5           00545         RRF             RESULT_PART2, F
+015C   0CA6           00546         RRF             RESULT_PART1, F
+015D   0BAC           00547         DECFSZ  COUNT, F  
+015E   2958           00548         GOTO    MultiplicationOp_LOOP
+015F   0008           00549         RETURN
+                      00550 ;=================================================================
+                      00551 ; Subroutine to wait for the co-processor to set the data ready flag
+0160                  00552 wait_for_co_processor_data
+0160   1D87           00553     btfss DATA_IN, 3   ; Check if the data ready flag is set by co-processor
+0161   2960           00554     goto wait_for_co_processor_data
+0162   0008           00555     return
+                      00556 ;============================================================================
+                      00557 ; Subroutine to receive most significant digits from co-processor
+Warning[208]: Label truncated at 32 characters. (receive_most_significant_digits_from_co_processor)
+0163                  00558 receive_most_significant_digits_from_co_processor
+                      00559     ; Wait for the co-processor to send the most significant digits
+0163   2160           00560     call wait_for_co_processor_data
+0164   0807           00561     movf DATA_IN, W
+0165   0829           00562     movf value_recivemost, W
+                      00563     ; Process and display most significant digits as needed
+0166   0008           00564     return
+                      00565 ;==========================================================================================
+                      00566 ; Subroutine to receive the least significant digit from the co-processor
+Warning[208]: Label truncated at 32 characters. (receive_least_significant_digit_from_co_processor)
+0167                  00567 receive_least_significant_digit_from_co_processor
+                      00568     ; Wait for the co-processor to set the data ready flag
+0167   2160           00569     call wait_for_co_processor_data
+                      00570 
+                      00571     ; Read the least significant digit from the co-processor
+0168   0807           00572     movf DATA_IN, W
+0169   00AA           00573     movwf value_recivelest  ; Store the least significant digit in the result
+                      00574 
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00575     ; Clear the data ready flag in the co-processor
+016A   1187           00576     bcf DATA_IN, 3
+                      00577 
+016B   0008           00578     return
+                      00579 
+                      00580 
+                      00581 ;=======================================final result====================================================
+                      00582 
+                      00583 
+                      00584 ;=================================================================
+                      00585 ; Subroutine to send the first number to the co-processor
+Warning[208]: Label truncated at 32 characters. (send_first_number_to_co_processor)
+016C                  00586 send_first_number_to_co_processor
+                      00587     ; Combine the tenth and unit parts into a single byte
+016C   0836           00588     movf num1, W
+016D   0087           00589     movwf DATA_OUT
+                      00590 
+                      00591     ; Set the data ready flag to notify the co-processor
+016E   1587           00592     bsf DATA_OUT, 3
+016F   1187           00593     bcf DATA_OUT, 3   ; Clear the data ready flag
+0170   0008           00594     return
+                      00595 ;==================================================================
+                      00596 ; Subroutine to send the unit digit of the second number to the co-processor
+Warning[208]: Label truncated at 32 characters. (send_unit_digit_of_second_number_to_co_processor)
+0171                  00597 send_unit_digit_of_second_number_to_co_processor
+0171   0834           00598     movf d22, W     ; Move the unit digit of the second number to W
+0172   0087           00599     movwf DATA_OUT  ; Store W in DATA_OUT for sending to co-processor
+                      00600 
+                      00601     ; Set the data ready flag to notify the co-processor
+0173   1587           00602     bsf DATA_OUT, 3
+0174   1187           00603     bcf DATA_OUT, 3   ; Clear the data ready flag
+0175   0008           00604     return
+                      00605 ;====================================================================
+                      00606 
+                      00607 ;===========================================printNum1=============================================
+0176                  00608 printNum1
+0176   304E           00609         MOVLW   'N'             ; load volts code
+0177   2239           00610         CALL    send            ; and output
+0178   3055           00611         MOVLW   'U'             ; load volts code
+0179   2239           00612         CALL    send            ; and output
+017A   304D           00613         MOVLW   'M'             ; load volts code
+017B   2239           00614         CALL    send            ; and output
+017C   3042           00615         MOVLW   'B'             ; load volts code
+017D   2239           00616         CALL    send            ; and output
+017E   3045           00617         MOVLW   'E'             ; load volts code
+017F   2239           00618         CALL    send            ; and output
+0180   3052           00619         MOVLW   'R'             ; load volts code
+0181   2239           00620         CALL    send            ; and output
+0182   3020           00621         MOVLW   ' '             ; load volts code
+0183   2239           00622         CALL    send            ; and output
+0184   3031           00623         MOVLW   '1'             ; load volts code
+0185   2239           00624         CALL    send            ; and output
+0186   0008           00625         RETURN                  ; done
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00626 ;============================================printNum2============================================
+0187                  00627 printNum2
+0187   304E           00628         MOVLW   'N'             ; load volts code
+0188   2239           00629         CALL    send            ; and output
+0189   3055           00630         MOVLW   'U'             ; load volts code
+018A   2239           00631         CALL    send            ; and output
+018B   304D           00632         MOVLW   'M'             ; load volts code
+018C   2239           00633         CALL    send            ; and output
+018D   3042           00634         MOVLW   'B'             ; load volts code
+018E   2239           00635         CALL    send            ; and output
+018F   3045           00636         MOVLW   'E'             ; load volts code
+0190   2239           00637         CALL    send            ; and output
+0191   3052           00638         MOVLW   'R'             ; load volts code
+0192   2239           00639         CALL    send            ; and output
+0193   3020           00640         MOVLW   ' '             ; load volts code
+0194   2239           00641         CALL    send            ; and output
+0195   3032           00642         MOVLW   '2'             ; load volts code
+0196   2239           00643         CALL    send            ; and output
+0197   0008           00644         RETURN                  ; done
+                      00645  ;============================================printX============================================
+0198                  00646 printX
+0198   3058           00647         MOVLW   'X'             ; load volts code
+0199   2239           00648         CALL    send            ; and output
+019A   0008           00649         RETURN                  ; done
+                      00650 ;==============================================printlcd =========================================
+019B                  00651 printlcd 
+019B   304D           00652         MOVLW   'M'             ; load volts code
+019C   2239           00653         CALL    send            ; and output
+019D   3055           00654         MOVLW   'U'             ; load volts code
+019E   2239           00655         CALL    send            ; and output
+019F   304C           00656         MOVLW   'L'             ; load volts code
+01A0   2239           00657         CALL    send            ; and output
+01A1   3054           00658         MOVLW   'T'             ; load volts code
+01A2   2239           00659         CALL    send            ; and output
+01A3   3049           00660         MOVLW   'I'             ; load volts code
+01A4   2239           00661         CALL    send            ; and output
+01A5   3050           00662         MOVLW   'P'             ; load volts code
+01A6   2239           00663         CALL    send            ; and output
+01A7   304C           00664         MOVLW   'L'             ; load volts code
+01A8   2239           00665         CALL    send            ; and output
+01A9   3049           00666         MOVLW   'I'             ; load volts code
+01AA   2239           00667         CALL    send            ; and output
+01AB   3043           00668         MOVLW   'C'             ; load volts code
+01AC   2239           00669         CALL    send            ; and output
+01AD   3041           00670         MOVLW   'A'             ; load volts code
+01AE   2239           00671         CALL    send            ; and output
+01AF   3054           00672         MOVLW   'T'             ; load volts code
+01B0   2239           00673         CALL    send            ; and output
+01B1   3049           00674         MOVLW   'I'             ; load volts code
+01B2   2239           00675         CALL    send            ; and output
+01B3   304F           00676         MOVLW   'O'             ; load volts code
+01B4   2239           00677         CALL    send            ; and output
+01B5   304E           00678         MOVLW   'N'             ; load volts code
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01B6   2239           00679         CALL    send            ; and output
+                      00680 
+01B7   0008           00681         RETURN                  ; done
+                      00682 ;===============================================putLCD=========================================
+01B8                  00683 putLCD
+                      00684     
+01B8   3057           00685         MOVLW   'W'             ; load volts code
+01B9   2239           00686         CALL    send            ; and output
+01BA   3045           00687         MOVLW   'E'             ; load volts code
+01BB   2239           00688         CALL    send            ; and output
+01BC   304C           00689         MOVLW   'L'             ; load volts code
+01BD   2239           00690         CALL    send            ; and output
+01BE   3043           00691         MOVLW   'C'             ; load volts code
+01BF   2239           00692         CALL    send            ; and output
+01C0   304F           00693         MOVLW   'O'             ; load volts code
+01C1   2239           00694         CALL    send            ; and output
+01C2   304D           00695         MOVLW   'M'             ; load volts code
+01C3   2239           00696         CALL    send            ; and output
+01C4   3045           00697         MOVLW   'E'             ; load volts code
+01C5   2239           00698         CALL    send            ; and output
+01C6   3020           00699         MOVLW   ' '             ; load volts code
+01C7   2239           00700         CALL    send            ; and output
+01C8   3054           00701         MOVLW   'T'             ; load volts code
+01C9   2239           00702         CALL    send            ; and output
+01CA   304F           00703         MOVLW   'O'             ; load volts code
+01CB   2239           00704         CALL    send            ; and output
+                      00705 
+01CC   0008           00706         RETURN                  ; done
+                      00707 ;=============================================printsign=========================================== 
+01CD                  00708 printsign
+01CD   3020           00709  MOVLW  ' '             ; load volts code
+01CE   2239           00710  CALL   send            ; and output
+01CF   303D           00711  MOVLW  '='             ; load volts code
+01D0   2239           00712  CALL   send            ; and output
+01D1   0008           00713  RETURN                 ; done
+                      00714 ;============================================print_result==========================================
+01D2                  00715 print_result
+01D2   10F4           00716         BCF     Select,RS       ; and restore data mode
+01D3   3080           00717     MOVLW       080             ; code to home cursor
+01D4   2239           00718     CALL    send                ; output it to display
+01D5   14F4           00719     BSF Select,RS       ; and restore data mode
+01D6   3052           00720     MOVLW       'R'             ; load volts code
+01D7   2239           00721         CALL    send            ; and output
+01D8   3045           00722         MOVLW   'E'             ; load volts code
+01D9   2239           00723         CALL    send            ; and output
+01DA   3053           00724         MOVLW   'S'             ; load volts code
+01DB   2239           00725         CALL    send            ; and output
+01DC   3055           00726         MOVLW   'U'             ; load volts code
+01DD   2239           00727         CALL    send            ; and output
+01DE   304C           00728         MOVLW   'L'             ; load volts code
+01DF   2239           00729         CALL    send            ; and output
+01E0   3054           00730         MOVLW   'T'             ; load volts code
+01E1   2239           00731         CALL    send            ; and output
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 16
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+01E2   3020           00732     MOVLW       ' '             ; load volts code
+01E3   2239           00733         CALL    send            ; and output
+01E4   3020           00734         MOVLW   ' '             ; load volts code
+01E5   2239           00735         CALL    send            ; and output
+01E6   3020           00736         MOVLW   ' '             ; load volts code
+01E7   2239           00737         CALL    send            ; and output
+01E8   3020           00738         MOVLW   ' '             ; load volts code
+01E9   2239           00739         CALL    send            ; and output
+01EA   3020           00740         MOVLW   ' '             ; load volts code
+01EB   2239           00741         CALL    send            ; and output
+01EC   3020           00742         MOVLW   ' '             ; load volts code
+01ED   2239           00743         CALL    send            ; and output
+01EE   3020           00744         MOVLW   ' '             ; load volts code
+01EF   2239           00745         CALL    send            ; and output
+01F0   3020           00746         MOVLW   ' '             ; load volts code
+01F1   2239           00747         CALL    send            ; and output
+01F2   3020           00748         MOVLW   ' '             ; load volts code
+01F3   2239           00749         CALL    send            ; and output
+                      00750     
+01F4   0008           00751     RETURN                      ; done
+                      00752     
+                      00753  
+                      00754 ;============================================MUL_BY_10============================================
+01F5                  00755 MUL_BY_10
+01F5   300A           00756         MOVLW d'10'
+01F6   00BB           00757         MOVWF x
+01F7   083C           00758         MOVF dgt,w
+Warning[207]: Found label after column 1. (loop3)
+01F8                  00759         loop3
+01F8   07BD           00760                 ADDWF x2,f 
+01F9   0BBB           00761                 decfsz x,f
+01FA   29F8           00762         GOTO loop3
+Warning[203]: Found opcode in column 1. (RETURN)
+01FB   0008           00763 RETURN                  ; done
+                      00764  
+                      00765 ;=============================================get all digits===========================================
+Warning[207]: Found label after column 1. (Combine)
+01FC                  00766  Combine:
+                      00767  ; Combine least significant and most significant parts into a single variable num
+Warning[203]: Found opcode in column 1. (movf)
+01FC   0829           00768 movf value_recivemost, W     ; Move most significant byte to W register
+Warning[203]: Found opcode in column 1. (movwf)
+01FD   00C6           00769 movwf numresult           ; Store it in num
+                      00770 
+                      00771 ; Left shift num by 8 bits (make room for the least significant byte)
+Warning[203]: Found opcode in column 1. (swapf)
+01FE   0E46           00772 swapf numresult , W        ; Swap the upper and lower nibbles
+Warning[203]: Found opcode in column 1. (movwf)
+01FF   00C6           00773 movwf numresult         ; Store the result back in num
+                      00774 
+Warning[203]: Found opcode in column 1. (movf)
+0200   082A           00775 movf value_recivelest, W     ; Move least significant byte to W register
+Warning[203]: Found opcode in column 1. (iorwf)
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 17
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0201   04C6           00776 iorwf numresult , F        ; OR it with num to combine the two parts
+                      00777 
+                      00778  
+Warning[203]: Found opcode in column 1. (return)
+0202   0008           00779 return 
+                      00780 
+                      00781 
+0203                  00782 get_digits                                                                                              
+                                                                                                                            
+                      00783 
+                      00784 
+                      00785 ; ======================================= Calculate hundredth digit=====================================
+0203   1403           00786         BSF     STATUS,C        ; repeat process for tens
+0204   3064           00787         MOVLW   D'100'          ; load 100
+0205                  00788 sub5
+Message[305]: Using default destination of 1 (file).
+0205   02C6           00789         SUBWF   numresult                   ; and subtract from result
+Message[305]: Using default destination of 1 (file).
+0206   0AC2           00790         INCF    thous           ; count number of loops
+0207   1803           00791         BTFSC   STATUS,C        ; and check if done
+0208   2A05           00792         GOTO    sub5            ; no, carry on
+Message[305]: Using default destination of 1 (file).
+0209   07C6           00793         ADDWF   numresult                   ; yes, add 100 back on
+Message[305]: Using default destination of 1 (file).
+020A   03C3           00794         DECF    huns            ; and correct loop count
+                      00795 
+                      00796 ;==================================== Calculate tens digit ========================================
+                      00797 
+020B   1403           00798         BSF     STATUS,C        ; repeat process for tens
+020C   3009           00799         MOVLW   D'9'            ; load 10
+020D                  00800 sub6
+Message[305]: Using default destination of 1 (file).
+020D   02C6           00801         SUBWF   numresult               ; and subtract from result
+Message[305]: Using default destination of 1 (file).
+020E   0AC4           00802         INCF    tens            ; count number of loops
+020F   1803           00803         BTFSC   STATUS,C        ; and check if done
+0210   2A0D           00804         GOTO    sub6            ; no, carry on
+Message[305]: Using default destination of 1 (file).
+0211   07C6           00805         ADDWF   numresult               ; yes, add 100 back on
+Message[305]: Using default destination of 1 (file).
+0212   03C4           00806         DECF    tens            ; and correct loop count
+                      00807 ; ========================= Calculate oness digit ====================================================
+0213   0846           00808         MOVF    numresult ,W            ; load remainder
+0214   00C5           00809         MOVWF   ones            ; and store as ones digit
+                      00810 
+0215   0008           00811         RETURN                  ; done
+                      00812  
+                      00813 ;===========================================displaynumbers=============================================
+0216                  00814 display
+0216   10F4           00815         BCF     Select,RS       ; and restore data mode
+0217   30C8           00816         MOVLW   0C8             ; code to home cursor
+0218   2239           00817         CALL    send            ; output it to display
+0219   14F4           00818         BSF     Select,RS       ; and restore data mode
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 18
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+021A   3030           00819         MOVLW 030
+Message[305]: Using default destination of 1 (file).
+021B   07C2           00820         ADDWF thous
+Message[305]: Using default destination of 1 (file).
+021C   07C3           00821         ADDWF huns
+Message[305]: Using default destination of 1 (file).
+021D   07C4           00822         ADDWF tens
+Message[305]: Using default destination of 1 (file).
+021E   07C5           00823         ADDWF ones
+021F   2239           00824         call send
+0220   0842           00825         MOVF thous,W
+0221   2239           00826         call send
+0222   0843           00827         MOVF huns,W
+0223   2239           00828         call send
+0224   0844           00829         MOVF tens,W
+0225   2239           00830         call send
+0226   0845           00831         MOVF ones,W
+0227   2239           00832         call send
+Warning[203]: Found opcode in column 1. (RETURN)
+0228   0008           00833 RETURN
+                      00834 ;========================================================================================
+                      00835 
+                      00836         #INCLUDE "LCDIS.INC"
+                      00001 ;       LCDIS.INC               MPB     19-12-05
+                      00002 ;
+                      00003 ;       Include file to operate 16x2 LCD display
+                      00004 ;       Uses GPR 70 - 75
+                      00005 ;       
+                      00006 ;       Final version
+                      00007 ;-------------------------------------------------------------------------------------------
+                      00008 
+  00000070            00009 Timer1  EQU     70              ; 1ms count register
+  00000071            00010 TimerX  EQU     71              ; Xms count register
+  00000072            00011 Var     EQU     72              ; Output variable
+  00000073            00012 Point   EQU     73              ; Program table pointer
+  00000074            00013 Select  EQU     74              ; Used to set or clear RS bit
+  00000075            00014 OutCod  EQU     75              ; Temp store for output code
+                      00015 
+  00000001            00016 RS      EQU     1               ; Register select output bit
+  00000002            00017 E       EQU     2               ; Enable output clocks display input
+                      00018 
+                      00019 
+                      00020 ;--------------------------------------------------------------------------------------------   
+                      00021 ;       1ms delay with 1us cycle time (1000 cycles)
+                      00022 ;--------------------------------------------------------------------------------------------   
+0229   30F9           00023 onems   MOVLW   D'249'          ; Count for 1ms delay 
+022A   00F0           00024         MOVWF   Timer1          ; Load count
+022B   0000           00025 loop1   NOP                     ; Pad for 4 cycle loop
+Message[305]: Using default destination of 1 (file).
+022C   0BF0           00026         DECFSZ  Timer1          ; Count
+022D   2A2B           00027         GOTO    loop1           ; until Z
+022E   0008           00028         RETURN                  ; and finish
+                      00029 
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 19
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00030 ;---------------------------------------------------------------------------------------------  
+                      00031 ;       Delay Xms
+                      00032 ;       Receives count in W, uses Onems
+                      00033 ;---------------------------------------------------------------------------------------------  
+022F   00F1           00034 xms     MOVWF   TimerX          ; Count for X ms
+0230   2229           00035 loopX   CALL    onems           ; Delay 1ms
+Message[305]: Using default destination of 1 (file).
+0231   0BF1           00036         DECFSZ  TimerX          ; Repeat X times 
+0232   2A30           00037         GOTO    loopX           ; until Z
+0233   0008           00038         RETURN                  ; and finish
+                      00039 
+                      00040 ;---------------------------------------------------------------------------------------------  
+                      00041 ;       Generate data/command clock siganl E
+                      00042 ;---------------------------------------------------------------------------------------------  
+0234   1508           00043 pulseE  BSF     PORTD,E         ; Set E high
+0235   2229           00044         CALL    onems           ; Delay 1ms
+0236   1108           00045         BCF     PORTD,E         ; Reset E low
+0237   2229           00046         CALL    onems           ; Delay 1ms
+0238   0008           00047         RETURN                  ; done
+                      00048 
+                      00049 ;---------------------------------------------------------------------------------------------  
+                      00050 ;       Send a command byte in two nibbles from RB4 - RB7
+                      00051 ;       Receives command in W, uses PulseE and Onems
+                      00052 ;---------------------------------------------------------------------------------------------  
+0239   00F5           00053 send    MOVWF   OutCod          ; Store output code
+023A   39F0           00054         ANDLW   0F0             ; Clear low nybble
+023B   0088           00055         MOVWF   PORTD           ; Output high nybble
+023C   18F4           00056         BTFSC   Select,RS       ; Test RS bit
+023D   1488           00057         BSF     PORTD,RS        ; and set for data
+023E   2234           00058         CALL    pulseE          ; and clock display register
+023F   2229           00059         CALL    onems           ; wait 1ms for display to complete
+                      00060 
+Message[305]: Using default destination of 1 (file).
+0240   0EF5           00061         SWAPF   OutCod          ; Swap low and high nybbles 
+0241   0875           00062         MOVF    OutCod,W        ; Retrieve output code
+0242   39F0           00063         ANDLW   0F0             ; Clear low nybble
+0243   0088           00064         MOVWF   PORTD           ; Output low nybble
+0244   18F4           00065         BTFSC   Select,RS       ; Test RS bit
+0245   1488           00066         BSF     PORTD,RS        ; and set for data
+0246   2234           00067         CALL    pulseE          ; and clock display register
+0247   2229           00068         CALL    onems           ; wait 1ms for display to complete
+0248   0008           00069         RETURN                  ; done
+                      00070 
+                      00071 ;---------------------------------------------------------------------------------------------  
+                      00072 ;       Initialise the display
+                      00073 ;       Uses Send
+                      00074 ;---------------------------------------------------------------------------------------------  
+0249   3064           00075 inid    MOVLW   D'100'          ; Load count for 100ms delay
+024A   222F           00076         CALL    xms             ; and wait for display start
+024B   30F0           00077         MOVLW   0F0             ; Mask for select code
+024C   00F4           00078         MOVWF   Select          ; High nybble not masked
+                      00079 
+024D   3030           00080         MOVLW   0x30            ; Load initial nibble
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 20
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+024E   0088           00081         MOVWF   PORTD           ; and output it to display
+024F   2234           00082         CALL    pulseE          ; Latch initial code
+0250   3005           00083         MOVLW   D'5'            ; Set delay 5ms
+0251   222F           00084         CALL    xms             ; and wait
+0252   2234           00085         CALL    pulseE          ; Latch initial code again
+0253   2229           00086         CALL    onems           ; Wait 1ms
+0254   2234           00087         CALL    pulseE          ; Latch initial code again
+0255   1208           00088         BCF     PORTD,4         ; Set 4-bit mode
+0256   2234           00089         CALL    pulseE          ; Latch it
+                      00090         
+0257   3028           00091         MOVLW   0x28            ; Set 4-bit mode, 2 lines
+0258   2239           00092         CALL    send            ; and send code
+0259   3008           00093         MOVLW   0x08            ; Switch off display
+025A   2239           00094         CALL    send            ; and send code
+025B   3001           00095         MOVLW   0x01            ; Code to clear display
+025C   2239           00096         CALL    send            ; and send code
+025D   3006           00097         MOVLW   0x06            ; Enable cursor auto inc  
+025E   2239           00098         CALL    send            ; and send code
+025F   3080           00099         MOVLW   0x80            ; Zero display address
+0260   2239           00100         CALL    send            ; and send code
+0261   300C           00101         MOVLW   0x0C            ; Turn on display  
+0262   2239           00102         CALL    send            ; and send code
+                      00103 
+0263   0008           00104         RETURN                  ; Done
+                      00105         
+                      00837 
+                      00838 
+0264                  00839 finl
+                      00840 
+                      00841         END     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 21
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ACKDT                             00000005
+ACKEN                             00000004
+ACKSTAT                           00000006
+ADCON0                            0000001F
+ADCON1                            0000009F
+ADCS0                             00000006
+ADCS1                             00000007
+ADDEN                             00000003
+ADFM                              00000007
+ADIE                              00000006
+ADIF                              00000006
+ADON                              00000000
+ADRESH                            0000001E
+ADRESL                            0000009E
+BCLIE                             00000003
+BCLIF                             00000003
+BF                                00000000
+BRGH                              00000002
+BlinkLoop                         00000133
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCP2CON                           0000001D
+CCP2IE                            00000000
+CCP2IF                            00000000
+CCP2M0                            00000000
+CCP2M1                            00000001
+CCP2M2                            00000002
+CCP2M3                            00000003
+CCP2X                             00000005
+CCP2Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CCPR2H                            0000001C
+CCPR2L                            0000001B
+CHS0                              00000003
+CHS1                              00000004
+CHS2                              00000005
+CIS                               00000003
+CKE                               00000006
+CKP                               00000004
+CM0                               00000000
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 22
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000009C
+CMIE                              00000006
+CMIF                              00000006
+COUNT                             0000002C
+CREN                              00000004
+CSRC                              00000007
+CVR0                              00000000
+CVR1                              00000001
+CVR2                              00000002
+CVR3                              00000003
+CVRCON                            0000009D
+CVREN                             00000007
+CVROE                             00000006
+CVRR                              00000005
+CheckPushButton                   0000012E
+Combine                           000001FC
+D                                 00000005
+DATA_ADDRESS                      00000005
+DATA_IN                           00000007
+DATA_OUT                          00000007
+DC                                00000001
+D_A                               00000005
+E                                 00000002
+EEADR                             0000010D
+EEADRH                            0000010F
+EECON1                            0000018C
+EECON2                            0000018D
+EEDATA                            0000010C
+EEDATH                            0000010E
+EEIE                              00000004
+EEIF                              00000004
+EEPGD                             00000007
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GCEN                              00000007
+GIE                               00000007
+GO                                00000002
+GO_DONE                           00000002
+I2C_DATA                          00000005
+I2C_READ                          00000002
+I2C_START                         00000003
+I2C_STOP                          00000004
+IBF                               00000007
+IBOV                              00000005
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 23
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ISR                               00000001
+MUL_BY_10                         000001F5
+MultiplicationOp                  00000151
+MultiplicationOp_LOOP             00000158
+NOT_A                             00000005
+NOT_ADDRESS                       00000005
+NOT_BO                            00000000
+NOT_BOR                           00000000
+NOT_DONE                          00000002
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_RC8                           00000006
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+NOT_TX8                           00000006
+NOT_W                             00000002
+NOT_WRITE                         00000002
+OBF                               00000006
+OERR                              00000001
+OPTION_REG                        00000081
+OutCod                            00000075
+P                                 00000004
+PCFG0                             00000000
+PCFG1                             00000001
+PCFG2                             00000002
+PCFG3                             00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PEN                               00000002
+PIE1                              0000008C
+PIE2                              0000008D
+PIR1                              0000000C
+PIR2                              0000000D
+PORTA                             00000005
+PORTB                             00000006
+PORTC                             00000007
+PORTD                             00000008
+PORTE                             00000009
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+PSPIE                             00000007
+PSPIF                             00000007
+PSPMODE                           00000004
+Point                             00000073
+R                                 00000002
+RB0_count                         00000040
+RBIE                              00000003
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 24
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RBIF                              00000000
+RBO_INTR                          00000029
+RBO_INTR1                         00000049
+RBO_INTR7                         0000007B
+RBO_INTR8                         0000009B
+RC8_9                             00000006
+RC9                               00000006
+RCD8                              00000000
+RCEN                              00000003
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+READ_WRITE                        00000002
+RESULT_1                          00000027
+RESULT_2                          00000028
+RESULT_PART1                      00000026
+RESULT_PART2                      00000025
+RP0                               00000005
+RP1                               00000006
+RS                                00000001
+RSEN                              00000001
+RX9                               00000006
+RX9D                              00000000
+R_W                               00000002
+S                                 00000003
+SEN                               00000000
+SMP                               00000007
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+SSPADD                            00000093
+SSPBUF                            00000013
+SSPCON                            00000014
+SSPCON2                           00000091
+SSPEN                             00000005
+SSPIE                             00000003
+SSPIF                             00000003
+SSPM0                             00000000
+SSPM1                             00000001
+SSPM2                             00000002
+SSPM3                             00000003
+SSPOV                             00000006
+SSPSTAT                           00000094
+STATUS                            00000003
+SYNC                              00000004
+Select                            00000074
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 25
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+T1CKPS1                           00000005
+T1CON                             00000010
+T1INSYNC                          00000002
+T1OSCEN                           00000003
+T1SYNC                            00000002
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TM0_INT                           00000031
+TM0_INT1                          00000059
+TM0_INT7                          00000083
+TM0_INT8                          000000AB
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRISC                             00000087
+TRISD                             00000088
+TRISE                             00000089
+TRISE0                            00000000
+TRISE1                            00000001
+TRISE2                            00000002
+TRMT                              00000001
+TX8_9                             00000006
+TX9                               00000006
+TX9D                              00000000
+TXD8                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+Timer1                            00000070
+TimerX                            00000071
+UA                                00000001
+Var                               00000072
+W                                 00000000
+WCOL                              00000007
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 26
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_CPD_OFF                          00003FFF
+_CPD_ON                           00003EFF
+_CP_ALL                           00001FFF
+_CP_OFF                           00003FFF
+_DEBUG_OFF                        00003FFF
+_DEBUG_ON                         000037FF
+_HS_OSC                           00003FFE
+_LP_OSC                           00003FFC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_WRT_1FOURTH                      00003BFF
+_WRT_256                          00003DFF
+_WRT_HALF                         000039FF
+_WRT_OFF                          00003FFF
+_XT_OSC                           00003FFD
+__16F877A                         00000001
+__DEBUG                           1
+clkNum                            00000047
+cont                              000000D8
+counter                           00000035
+d1                                0000002D
+d11                               00000031
+d12                               00000032
+d2                                0000002F
+d21                               00000033
+d22                               00000034
+d3                                00000030
+d_1sec                            00000142
+dgt                               0000003C
+digit_pos                         0000003E
+dis_RB0                           00000040
+dis_RB01                          00000067
+dis_RB07                          00000092
+dis_RB08                          000000B9
+dis_TM0                           00000037
+dis_TM01                          0000005F
+dis_TM07                          00000089
+dis_TM08                          000000B1
+dis_TM0_k                         000000C5
+display                           00000216
+displayNums                       000000CA
+finl                              00000264
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 27
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+get_digits                        00000203
+here                              000000BD
+huns                              00000043
+inid                              00000249
+loop1                             0000022B
+loop2d                            00000146
+loop3                             000001F8
+loop3d                            00000144
+loopX                             00000230
+loopd                             00000148
+multiplier                        0000002B
+num                               00000038
+num1                              00000036
+num2                              00000037
+numresult                         00000046
+onems                             00000229
+ones                              00000045
+ones1                             00000044
+ones2                             00000096
+op_num                            0000003F
+printNum1                         00000176
+printNum2                         00000187
+printX                            00000198
+print_result                      000001D2
+printlcd                          0000019B
+printsign                         000001CD
+pulseE                            00000234
+putLCD                            000001B8
+receive_least_significant_digit_  00000167
+receive_most_significant_digits_  00000163
+rolling1_9_0                      000000A5
+rolling_9_0                       00000053
+send                              00000239
+send_first_number_to_co_processo  0000016C
+send_unit_digit_of_second_number  00000171
+skip_carry_addition               0000011E
+start                             000000DE
+start2                            00000110
+sub5                              00000205
+sub6                              0000020D
+temp_high                         00000039
+temp_low                          0000003A
+temp_result                       0000002E
+tens                              00000044
+tens1                             00000024
+tens2                             00000076
+thous                             00000042
+value_one                         00000041
+value_recivelest                  0000002A
+value_recivemost                  00000029
+wait_for_co_processor_data        00000160
+x                                 0000003B
+x2                                0000003D
+MPASM  5.43                         FIRST.ASM   2-15-2024  23:39:17         PAGE 28
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+xms                               0000022F
+zero                              00000057
+zero2                             00000081
+zero_2                            000000A9
+zero_clks                         000000C3
+zero_tenthous                     0000002F
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : X---XXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+00C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0140 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0180 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+01C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0200 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0240 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXX------------ ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:   609
+Program Memory Words Free:  7583
+
+
+Errors   :     0
+Warnings :    52 reported,     0 suppressed
+Messages :    32 reported,     0 suppressed
+
+

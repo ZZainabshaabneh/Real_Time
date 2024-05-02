@@ -1,0 +1,174 @@
+MPLINK 4.41, Linker
+Linker Map File - Created Thu Feb 15 23:39:19 2024
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000002
+                   .org_2       code   0x000004    program   0x0004c0
+     .config_2007_FIRST.O       code   0x002007    program   0x000002
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000000      
+                            0x000004    0x000263      
+                            0x002007    0x002007      
+            610 out of 8454 program addresses used, program memory utilization is 7%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                BlinkLoop   0x000133    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+          CheckPushButton   0x00012e    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                  Combine   0x0001fc    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                      ISR   0x000001    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                MUL_BY_10   0x0001f5    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+         MultiplicationOp   0x000151    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+    MultiplicationOp_LOOP   0x000158    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 RBO_INTR   0x000029    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                RBO_INTR1   0x000049    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                RBO_INTR7   0x00007b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                RBO_INTR8   0x00009b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                  TM0_INT   0x000031    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 TM0_INT1   0x000059    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 TM0_INT7   0x000083    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 TM0_INT8   0x0000ab    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     cont   0x0000d8    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   d_1sec   0x000142    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                  dis_RB0   0x000040    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_RB01   0x000067    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_RB07   0x000092    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_RB08   0x0000b9    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                  dis_TM0   0x000037    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_TM01   0x00005f    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_TM07   0x000089    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_TM08   0x0000b1    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                dis_TM0_k   0x0000c5    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                  display   0x000216    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+              displayNums   0x0000ca    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     finl   0x000264    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+               get_digits   0x000203    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     here   0x0000bd    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     inid   0x000249    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                    loop1   0x00022b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                   loop2d   0x000146    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    loop3   0x0001f8    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   loop3d   0x000144    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    loopX   0x000230    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                    loopd   0x000148    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    onems   0x000229    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                    ones1   0x000044    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    ones2   0x000096    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                printNum1   0x000176    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                printNum2   0x000187    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   printX   0x000198    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+             print_result   0x0001d2    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 printlcd   0x00019b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                printsign   0x0001cd    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   pulseE   0x000234    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                   putLCD   0x0001b8    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+receive_least_significant_digit_   0x000167    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+receive_most_significant_digits_   0x000163    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+             rolling1_9_0   0x0000a5    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+              rolling_9_0   0x000053    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     send   0x000239    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+send_first_number_to_co_processo   0x00016c    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+send_unit_digit_of_second_number   0x000171    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+      skip_carry_addition   0x00011e    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    start   0x0000de    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   start2   0x000110    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     sub5   0x000205    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     sub6   0x00020d    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    tens1   0x000024    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    tens2   0x000076    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+wait_for_co_processor_data   0x000160    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                      xms   0x00022f    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                     zero   0x000057    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    zero2   0x000081    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   zero_2   0x0000a9    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                zero_clks   0x0000c3    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+            zero_tenthous   0x00002f    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                      ISR   0x000001    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    tens1   0x000024    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 RBO_INTR   0x000029    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+            zero_tenthous   0x00002f    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                  TM0_INT   0x000031    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                  dis_TM0   0x000037    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                  dis_RB0   0x000040    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    ones1   0x000044    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                RBO_INTR1   0x000049    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+              rolling_9_0   0x000053    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     zero   0x000057    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 TM0_INT1   0x000059    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_TM01   0x00005f    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_RB01   0x000067    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    tens2   0x000076    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                RBO_INTR7   0x00007b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    zero2   0x000081    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 TM0_INT7   0x000083    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_TM07   0x000089    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_RB07   0x000092    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    ones2   0x000096    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                RBO_INTR8   0x00009b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+             rolling1_9_0   0x0000a5    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   zero_2   0x0000a9    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 TM0_INT8   0x0000ab    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_TM08   0x0000b1    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 dis_RB08   0x0000b9    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     here   0x0000bd    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                zero_clks   0x0000c3    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                dis_TM0_k   0x0000c5    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+              displayNums   0x0000ca    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     cont   0x0000d8    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    start   0x0000de    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   start2   0x000110    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+      skip_carry_addition   0x00011e    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+          CheckPushButton   0x00012e    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                BlinkLoop   0x000133    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   d_1sec   0x000142    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   loop3d   0x000144    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   loop2d   0x000146    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    loopd   0x000148    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+         MultiplicationOp   0x000151    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+    MultiplicationOp_LOOP   0x000158    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+wait_for_co_processor_data   0x000160    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+receive_most_significant_digits_   0x000163    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+receive_least_significant_digit_   0x000167    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+send_first_number_to_co_processo   0x00016c    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+send_unit_digit_of_second_number   0x000171    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                printNum1   0x000176    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                printNum2   0x000187    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   printX   0x000198    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                 printlcd   0x00019b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                   putLCD   0x0001b8    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                printsign   0x0001cd    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+             print_result   0x0001d2    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                MUL_BY_10   0x0001f5    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    loop3   0x0001f8    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                  Combine   0x0001fc    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+               get_digits   0x000203    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     sub5   0x000205    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                     sub6   0x00020d    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                  display   0x000216    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+                    onems   0x000229    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                    loop1   0x00022b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                      xms   0x00022f    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                    loopX   0x000230    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                   pulseE   0x000234    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                     send   0x000239    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                     inid   0x000249    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\LCDIS.INC
+                     finl   0x000264    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Master\first.asm
+
+

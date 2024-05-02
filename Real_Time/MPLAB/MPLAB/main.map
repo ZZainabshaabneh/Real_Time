@@ -1,0 +1,70 @@
+MPLINK 4.41, Linker
+Linker Map File - Created Wed Feb 14 15:24:40 2024
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000002
+                   .org_2       code   0x000004    program   0x0000e4
+      .config_2007_MAIN.O       code   0x002007    program   0x000002
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000000      
+                            0x000004    0x000075      
+                            0x002007    0x002007      
+            116 out of 8454 program addresses used, program memory utilization is 1%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                      ISR   0x000001    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+         MultiplicationOp   0x000019    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+    MultiplicationOp_LOOP   0x00001f    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+                     finl   0x000076    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+                     inid   0x00005b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                    loop1   0x00003d    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                    loopX   0x000042    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                main_loop   0x000010    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+                    onems   0x00003b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                   pulseE   0x000046    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+receive_first_number_from_master   0x000027    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+receive_second_number_from_maste   0x00002c    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+                     send   0x00004b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+send_least_significant_digit_to_   0x000036    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+send_most_significant_digits_to_   0x000031    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+                    start   0x000007    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+     wait_for_master_data   0x000016    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+                      xms   0x000041    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                      ISR   0x000001    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+                    start   0x000007    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+                main_loop   0x000010    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+     wait_for_master_data   0x000016    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+         MultiplicationOp   0x000019    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+    MultiplicationOp_LOOP   0x00001f    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+receive_first_number_from_master   0x000027    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+receive_second_number_from_maste   0x00002c    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+send_most_significant_digits_to_   0x000031    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+send_least_significant_digit_to_   0x000036    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+                    onems   0x00003b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                    loop1   0x00003d    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                      xms   0x000041    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                    loopX   0x000042    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                   pulseE   0x000046    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                     send   0x00004b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                     inid   0x00005b    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\LCDIS.INC
+                     finl   0x000076    program     static C:\Users\DELL\Desktop\university\lastsummester\FINALREAL\Co-prosser\MPLAB\main.asm
+
+
